@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>World Cup 2026 — Market Value Simulator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --font-display:'Barlow Condensed',sans-serif;
+  --font-body:'Barlow',sans-serif;
+  --text-xs:clamp(0.72rem,.7rem + .2vw,.875rem);
+  --text-sm:clamp(0.875rem,.82rem + .3vw,1rem);
+  --text-base:clamp(1rem,.95rem + .25vw,1.125rem);
+  --text-lg:clamp(1.125rem,1rem + .7vw,1.5rem);
+  --text-xl:clamp(1.4rem,1.1rem + 1.1vw,2.1rem);
+  --text-2xl:clamp(2rem,1.2rem + 2.2vw,3.2rem);
+  --text-hero:clamp(2.4rem,.8rem + 5vw,5rem);
+}
+:root,[data-theme="light"]{
+  --bg:#f4f3ef;--surface:#faf9f7;--surface-2:#fdfdfc;--surface-off:#edebe6;--surface-dyn:#e2e0db;
+  --divider:#d8d6d0;--border:#c8c5be;
+  --text:#1c1a15;--text-muted:#686763;--text-faint:#adaca6;--text-inv:#f8f7f3;
+  --primary:#c9372c;--primary-h:#a82d23;--primary-hi:#f0d4d2;
+  --gold:#c98c0a;--gold-hi:#ece0be;
+  --green:#3a7a1e;--green-hi:#d0e4c8;
+  --blue:#2b6ca8;--blue-hi:#cfe0f4;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.07);--shadow-md:0 4px 16px rgba(0,0,0,.09);--shadow-lg:0 12px 40px rgba(0,0,0,.13);
+}
+[data-theme="dark"]{
+  --bg:#111009;--surface:#181714;--surface-2:#1d1c19;--surface-off:#1b1a17;--surface-dyn:#252320;
+  --divider:#222018;--border:#2e2c28;
+  --text:#d2d0cb;--text-muted:#787672;--text-faint:#4c4b47;--text-inv:#1a1810;
+  --primary:#e85d52;--primary-h:#d4443a;--primary-hi:#4a2120;
+  --gold:#e0b028;--gold-hi:#382e10;
+  --green:#5bad38;--green-hi:#1c2e14;
+  --blue:#5090cc;--blue-hi:#162540;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 4px 16px rgba(0,0,0,.5);--shadow-lg:0 12px 40px rgba(0,0,0,.7);
+}
+@media(prefers-color-scheme:dark){:root:not([data-theme]){
+  --bg:#111009;--surface:#181714;--surface-2:#1d1c19;--surface-off:#1b1a17;--surface-dyn:#252320;
+  --divider:#222018;--border:#2e2c28;
+  --text:#d2d0cb;--text-muted:#787672;--text-faint:#4c4b47;--text-inv:#1a1810;
+  --primary:#e85d52;--primary-h:#d4443a;--primary-hi:#4a2120;
+  --gold:#e0b028;--gold-hi:#382e10;
+  --green:#5bad38;--green-hi:#1c2e14;
+  --blue:#5090cc;--blue-hi:#162540;
+  --shadow-sm:0 1px 3px rgba(0,0,0,.35);--shadow-md:0 4px 16px rgba(0,0,0,.5);--shadow-lg:0 12px 40px rgba(0,0,0,.7);
+}}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{-webkit-font-smoothing:antialiased;scroll-behavior:smooth;}
+body{min-height:100dvh;font-family:var(--font-body);font-size:var(--text-base);color:var(--text);background:var(--bg);line-height:1.6;}
+button{cursor:pointer;background:none;border:none;font:inherit;color:inherit;}
+a,button{transition:all 150ms ease;}
+.nav{position:sticky;top:0;z-index:100;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--divider);padding:.65rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;}
+.nav-logo{display:flex;align-items:center;gap:.65rem;text-decoration:none;color:var(--text);}
+.nav-logo-text{font-family:var(--font-display);font-size:var(--text-lg);font-weight:700;letter-spacing:.02em;line-height:1;}
+.nav-logo-sub{font-size:var(--text-xs);color:var(--text-muted);letter-spacing:.05em;text-transform:uppercase;}
+.nav-right{display:flex;align-items:center;gap:.5rem;}
+.tab-nav{display:flex;gap:2px;background:var(--surface-off);border-radius:.5rem;padding:2px;}
+.tab-btn{font-family:var(--font-display);font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:.3rem .85rem;border-radius:calc(.5rem - 2px);color:var(--text-muted);}
+.tab-btn:hover{color:var(--text);}
+.tab-btn.active{background:var(--surface);color:var(--text);box-shadow:var(--shadow-sm);}
+.theme-btn{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);}
+.theme-btn:hover{background:var(--surface-off);color:var(--text);}
+.hero{padding:4rem 1.5rem 3rem;text-align:center;position:relative;overflow:hidden;}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 55% at 50% 0%,color-mix(in srgb,var(--primary) 11%,transparent),transparent);pointer-events:none;}
+.hero-eyebrow{font-family:var(--font-display);font-size:var(--text-xs);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);margin-bottom:.85rem;}
+.hero-title{font-family:var(--font-display);font-size:var(--text-hero);font-weight:800;line-height:.95;letter-spacing:-.01em;color:var(--text);margin-bottom:1rem;}
+.hero-title span{color:var(--primary);}
+.hero-sub{font-size:var(--text-sm);color:var(--text-muted);max-width:54ch;margin:0 auto 1.5rem;}
+.hero-pills{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;}
+.pill{display:inline-flex;align-items:center;gap:.35rem;border-radius:999px;padding:.3rem .85rem;font-family:var(--font-display);font-size:var(--text-xs);font-weight:700;letter-spacing:.06em;text-transform:uppercase;}
+.pill-red{background:var(--primary-hi);color:var(--primary);}
+.pill-gold{background:var(--gold-hi);color:var(--gold);}
+.pill-blue{background:var(--blue-hi);color:var(--blue);}
+.page{display:none;max-width:1200px;margin:0 auto;padding:2rem 1.5rem 6rem;}
+.page.active{display:block;}
+.sec-hd{margin-bottom:1.75rem;}
+.sec-title{font-family:var(--font-display);font-size:var(--text-xl);font-weight:800;letter-spacing:.01em;line-height:1.1;}
+.sec-sub{color:var(--text-muted);font-size:var(--text-sm);margin-top:.35rem;}
+.groups-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(300px,100%),1fr));gap:1rem;}
+.gc{background:var(--surface);border:1px solid var(--border);border-radius:.875rem;overflow:hidden;box-shadow:var(--shadow-sm);}
+.gc-head{background:color-mix(in srgb,var(--primary) 7%,var(--surface));padding:.6rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--divider);}
+.gc-letter{font-family:var(--font-display);font-size:var(--text-xl);font-weight:800;color:var(--primary);line-height:1;}
+.gc-label{font-size:var(--text-xs);color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;}
+.gc-body{padding:.4rem .4rem;}
+.tr{display:flex;align-items:center;gap:.6rem;padding:.4rem .6rem;border-radius:.45rem;margin-bottom:2px;}
+.tr:hover{background:var(--surface-off);}
+.tr.q1{background:color-mix(in srgb,var(--primary) 7%,transparent);}
+.tr.q2{background:color-mix(in srgb,var(--gold) 7%,transparent);}
+.tr.q3{background:color-mix(in srgb,var(--green) 5%,transparent);}
+.tf{font-size:1.3rem;width:26px;text-align:center;flex-shrink:0;}
+.tn{flex:1;font-size:var(--text-sm);font-weight:500;}
+.tv{font-family:var(--font-display);font-size:var(--text-xs);font-weight:700;color:var(--text-muted);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.tbadge{font-size:.65rem;font-weight:700;padding:1px 5px;border-radius:999px;margin-left:.3rem;font-family:var(--font-display);letter-spacing:.05em;text-transform:uppercase;}
+.b1{background:var(--primary-hi);color:var(--primary);}
+.b2{background:var(--gold-hi);color:var(--gold);}
+.b3{background:var(--green-hi);color:var(--green);}
+.tbar-wrap{height:2px;background:var(--surface-dyn);border-radius:999px;margin-top:2px;}
+.tbar{height:100%;border-radius:999px;background:var(--primary);}
+.bracket-scroll{overflow-x:auto;padding-bottom:1.5rem;}
+.bracket{display:flex;min-width:820px;}
+.bround{display:flex;flex-direction:column;flex:1;min-width:150px;}
+.bround-hd{font-family:var(--font-display);font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);text-align:center;padding:.6rem .5rem;border-bottom:1px solid var(--divider);margin-bottom:.75rem;}
+.bmatches{display:flex;flex-direction:column;flex:1;justify-content:space-around;padding:0 .35rem;}
+.bm{background:var(--surface);border:1px solid var(--border);border-radius:.6rem;overflow:hidden;margin:.25rem 0;box-shadow:var(--shadow-sm);}
+.bm.is-final{border:2px solid var(--primary);box-shadow:var(--shadow-md),0 0 0 3px var(--primary-hi);}
+.bmt{display:flex;align-items:center;gap:.4rem;padding:.35rem .55rem;}
+.bmt:first-child{border-bottom:1px solid var(--divider);}
+.bmt.win{background:color-mix(in srgb,var(--primary) 6%,var(--surface-2));}
+.bmt.win .bmn{color:var(--primary);font-weight:600;}
+.bmf{font-size:1rem;width:20px;text-align:center;flex-shrink:0;}
+.bmn{font-size:.72rem;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.bmv{font-family:var(--font-display);font-size:.7rem;font-weight:600;color:var(--text-faint);font-variant-numeric:tabular-nums;white-space:nowrap;}
+.champ-card{background:linear-gradient(135deg,color-mix(in srgb,var(--primary) 10%,var(--surface)),var(--surface));border:2px solid var(--primary);border-radius:1rem;padding:2.5rem;text-align:center;max-width:480px;margin:0 auto 2rem;box-shadow:var(--shadow-lg);}
+.champ-trophy{font-size:3.5rem;margin-bottom:.75rem;}
+.champ-label{font-family:var(--font-display);font-size:var(--text-xs);font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--primary);}
+.champ-flag{font-size:2.5rem;margin:.5rem 0;}
+.champ-name{font-family:var(--font-display);font-size:var(--text-2xl);font-weight:800;color:var(--text);line-height:1;}
+.champ-val{font-size:var(--text-sm);color:var(--text-muted);margin-top:.5rem;}
+.podium{display:flex;justify-content:center;gap:.75rem;flex-wrap:wrap;margin-bottom:2.5rem;}
+.pod{background:var(--surface);border:1px solid var(--border);border-radius:.875rem;padding:1.1rem 1.4rem;text-align:center;min-width:130px;box-shadow:var(--shadow-sm);}
+.pod-med{font-size:1.6rem;margin-bottom:.3rem;}
+.pod-pos{font-family:var(--font-display);font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);}
+.pod-flag{font-size:1.5rem;margin:.2rem 0;}
+.pod-name{font-family:var(--font-display);font-size:var(--text-sm);font-weight:700;}
+.pod-val{font-size:var(--text-xs);color:var(--text-muted);}
+.rtable{width:100%;border-collapse:collapse;}
+.rtable th{font-family:var(--font-display);font-size:var(--text-xs);font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);padding:.65rem 1rem;text-align:left;border-bottom:2px solid var(--divider);}
+.rtable td{padding:.6rem 1rem;border-bottom:1px solid var(--divider);font-size:var(--text-sm);}
+.rtable tr:last-child td{border-bottom:none;}
+.rtable tr:hover td{background:var(--surface-off);}
+.rnum{font-family:var(--font-display);font-weight:800;font-size:var(--text-base);color:var(--text-faint);width:36px;}
+.rnum.top{color:var(--primary);}
+.rval{font-family:var(--font-display);font-weight:700;font-variant-numeric:tabular-nums;}
+.rbar-wrap{height:4px;background:var(--surface-dyn);border-radius:999px;width:160px;}
+.rbar{height:100%;border-radius:999px;background:var(--primary);}
+.ebadge{font-family:var(--font-display);font-size:.65rem;font-weight:700;padding:2px 7px;border-radius:999px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap;}
+.e-group{background:var(--surface-dyn);color:var(--text-faint);}
+.e-r32{background:color-mix(in srgb,var(--text-muted) 14%,transparent);color:var(--text-muted);}
+.e-r16{background:var(--blue-hi);color:var(--blue);}
+.e-qf{background:var(--gold-hi);color:var(--gold);}
+.e-sf{background:color-mix(in srgb,var(--primary) 14%,transparent);color:var(--primary);}
+.e-3rd{background:var(--green-hi);color:var(--green);}
+.e-final{background:color-mix(in srgb,var(--primary) 20%,transparent);color:var(--primary);}
+.e-champ{background:var(--primary);color:var(--text-inv);}
+.footer{border-top:1px solid var(--divider);padding:1.5rem;text-align:center;color:var(--text-faint);font-size:var(--text-xs);}
+@media(max-width:600px){
+  .nav{padding:.5rem 1rem;}
+  .tab-btn{padding:.25rem .6rem;}
+  .hero{padding:2.5rem 1rem 2rem;}
+  .page{padding:1.25rem 1rem 4rem;}
+  .rbar-wrap{display:none;}
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.page.active .gc{animation:fadeUp .38s cubic-bezier(.16,1,.3,1) both;}
+.gc:nth-child(1){animation-delay:.02s}.gc:nth-child(2){animation-delay:.06s}.gc:nth-child(3){animation-delay:.1s}
+.gc:nth-child(4){animation-delay:.14s}.gc:nth-child(5){animation-delay:.18s}.gc:nth-child(6){animation-delay:.22s}
+.gc:nth-child(7){animation-delay:.26s}.gc:nth-child(8){animation-delay:.3s}.gc:nth-child(9){animation-delay:.34s}
+.gc:nth-child(10){animation-delay:.38s}.gc:nth-child(11){animation-delay:.42s}.gc:nth-child(12){animation-delay:.46s}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="#">
+    <svg width="30" height="30" viewBox="0 0 32 32" fill="none">
+      <circle cx="16" cy="16" r="14" stroke="currentColor" stroke-width="1.5" opacity=".25"/>
+      <circle cx="16" cy="16" r="9" fill="var(--primary)" opacity=".9"/>
+      <path d="M16 7L17.8 12.5H23.5L18.9 15.9L20.7 21.4L16 18L11.3 21.4L13.1 15.9L8.5 12.5H14.2Z" fill="white"/>
+    </svg>
+    <div>
+      <div class="nav-logo-text">WC 2026 Sim</div>
+      <div class="nav-logo-sub">Market Value Bracket</div>
+    </div>
+  </a>
+  <div class="nav-right">
+    <nav class="tab-nav">
+      <button class="tab-btn active" onclick="showPage('groups',this)">Groups</button>
+      <button class="tab-btn" onclick="showPage('bracket',this)">Bracket</button>
+      <button class="tab-btn" onclick="showPage('rankings',this)">All 48</button>
+    </nav>
+    <button class="theme-btn" id="themeBtn" aria-label="Toggle theme">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+  </div>
+</nav>
+
+<div class="hero">
+  <div class="hero-eyebrow">2026 FIFA World Cup · Official Groups · Transfermarkt Data</div>
+  <h1 class="hero-title">Who Wins<br>on <span>Paper?</span></h1>
+  <p class="hero-sub">Full 48-team simulation using real Transfermarkt squad values and the official Dec 2025 draw. Higher value wins every match — no luck, no upsets.</p>
+  <div class="hero-pills">
+    <span class="pill pill-red">🏆 France wins · €1,476M</span>
+    <span class="pill pill-gold">🥈 England · €1,310M</span>
+    <span class="pill pill-blue">🥉 Spain · €1,267M</span>
+  </div>
+</div>
+
+<div id="page-groups" class="page active">
+  <div class="sec-hd">
+    <h2 class="sec-title">Group Stage</h2>
+    <p class="sec-sub">Official groups from the Dec 2025 FIFA draw. Top 2 per group + 8 best third-place teams advance. Ranked by Transfermarkt squad value.</p>
+  </div>
+  <div class="groups-grid" id="groups-grid"></div>
+</div>
+
+<div id="page-bracket" class="page">
+  <div class="champ-card">
+    <div class="champ-trophy">🏆</div>
+    <div class="champ-label">World Cup 2026 Champion</div>
+    <div class="champ-flag">🇫🇷</div>
+    <div class="champ-name">France</div>
+    <div class="champ-val">€1,476M · Highest squad value in the tournament</div>
+  </div>
+  <div class="podium">
+    <div class="pod"><div class="pod-med">🥈</div><div class="pod-pos">Runner-up</div><div class="pod-flag">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div><div class="pod-name">England</div><div class="pod-val">€1,310M</div></div>
+    <div class="pod"><div class="pod-med">🥉</div><div class="pod-pos">3rd Place</div><div class="pod-flag">🇪🇸</div><div class="pod-name">Spain</div><div class="pod-val">€1,267M</div></div>
+    <div class="pod"><div class="pod-med">4️⃣</div><div class="pod-pos">4th Place</div><div class="pod-flag">🇦🇷</div><div class="pod-name">Argentina</div><div class="pod-val">€816M</div></div>
+  </div>
+  <div class="sec-hd">
+    <h2 class="sec-title">Full Knockout Bracket</h2>
+    <p class="sec-sub">Higher market value wins every match. Values in €M.</p>
+  </div>
+  <div class="bracket-scroll"><div class="bracket" id="bracket"></div></div>
+</div>
+
+<div id="page-rankings" class="page">
+  <div class="sec-hd">
+    <h2 class="sec-title">All 48 Teams</h2>
+    <p class="sec-sub">Ranked by Transfermarkt squad value with simulated elimination round.</p>
+  </div>
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:.875rem;overflow:hidden;box-shadow:var(--shadow-sm);">
+    <table class="rtable"><thead><tr>
+      <th>#</th><th>Team</th><th>Value</th><th></th><th>Exit</th>
+    </tr></thead><tbody id="rankings-body"></tbody></table>
+  </div>
+</div>
+
+<footer class="footer">Data: Transfermarkt via Mundo Deportivo &amp; PM News · Values as of June 2026 · Official groups from Dec 2025 FIFA draw · Simulation = pure market value</footer>
+
+<script>
+const GROUPS = {"A":[["Mexico","\ud83c\uddf2\ud83c\uddfd",197],["Czechia","\ud83c\udde8\ud83c\uddff",192],["South Korea","\ud83c\uddf0\ud83c\uddf7",144],["South Africa","\ud83c\uddff\ud83c\udde6",47]],"B":[["Switzerland","\ud83c\udde8\ud83c\uddad",337],["Canada","\ud83c\udde8\ud83c\udde6",206],["Bosnia & Herz.","\ud83c\udde7\ud83c\udde6",151],["Qatar","\ud83c\uddf6\ud83c\udde6",20]],"C":[["Brazil","\ud83c\udde7\ud83c\uddf7",909],["Morocco","\ud83c\uddf2\ud83c\udde6",494],["Scotland","\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc73\udb40\udc63\udb40\udc74\udb40\udc7f",178],["Haiti","\ud83c\udded\ud83c\uddf9",56]],"D":[["Turkey","\ud83c\uddf9\ud83c\uddf7",479],["USA","\ud83c\uddfa\ud83c\uddf8",383],["Paraguay","\ud83c\uddf5\ud83c\uddfe",159],["Australia","\ud83c\udde6\ud83c\uddfa",75]],"E":[["Germany","\ud83c\udde9\ud83c\uddea",998],["Ivory Coast","\ud83c\udde8\ud83c\uddee",537],["Ecuador","\ud83c\uddea\ud83c\udde8",380],["Cura\u00e7ao","\ud83c\udde8\ud83c\uddfc",27]],"F":[["Netherlands","\ud83c\uddf3\ud83c\uddf1",837],["Sweden","\ud83c\uddf8\ud83c\uddea",433],["Japan","\ud83c\uddef\ud83c\uddf5",282],["Tunisia","\ud83c\uddf9\ud83c\uddf3",70]],"G":[["Belgium","\ud83c\udde7\ud83c\uddea",530],["Egypt","\ud83c\uddea\ud83c\uddec",136],["New Zealand","\ud83c\uddf3\ud83c\uddff",36],["Iran","\ud83c\uddee\ud83c\uddf7",33]],"H":[["Spain","\ud83c\uddea\ud83c\uddf8",1267],["Uruguay","\ud83c\uddfa\ud83c\uddfe",411],["Cabo Verde","\ud83c\udde8\ud83c\uddfb",57],["Saudi Arabia","\ud83c\uddf8\ud83c\udde6",37]],"I":[["France","\ud83c\uddeb\ud83c\uddf7",1476],["Norway","\ud83c\uddf3\ud83c\uddf4",601],["Senegal","\ud83c\uddf8\ud83c\uddf3",479],["Iraq","\ud83c\uddee\ud83c\uddf6",21]],"J":[["Argentina","\ud83c\udde6\ud83c\uddf7",816],["Austria","\ud83c\udde6\ud83c\uddf9",275],["Algeria","\ud83c\udde9\ud83c\uddff",261],["Jordan","\ud83c\uddef\ud83c\uddf4",20]],"K":[["Portugal","\ud83c\uddf5\ud83c\uddf9",957],["Colombia","\ud83c\udde8\ud83c\uddf4",309],["DR Congo","\ud83c\udde8\ud83c\udde9",151],["Uzbekistan","\ud83c\uddfa\ud83c\uddff",74]],"L":[["England","\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f",1310],["Croatia","\ud83c\udded\ud83c\uddf7",391],["Ghana","\ud83c\uddec\ud83c\udded",234],["Panama","\ud83c\uddf5\ud83c\udde6",35]]};
+const R32 = [["Mexico","\ud83c\uddf2\ud83c\uddfd",197,"Canada","\ud83c\udde8\ud83c\udde6",206],["Turkey","\ud83c\uddf9\ud83c\uddf7",479,"Switzerland","\ud83c\udde8\ud83c\uddad",337],["Brazil","\ud83c\udde7\ud83c\uddf7",909,"Scotland","\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc73\udb40\udc63\udb40\udc74\udb40\udc7f",178],["Spain","\ud83c\uddea\ud83c\uddf8",1267,"Senegal","\ud83c\uddf8\ud83c\uddf3",479],["Germany","\ud83c\udde9\ud83c\uddea",998,"Ecuador","\ud83c\uddea\ud83c\udde8",380],["Netherlands","\ud83c\uddf3\ud83c\uddf1",837,"Japan","\ud83c\uddef\ud83c\uddf5",282],["Belgium","\ud83c\udde7\ud83c\uddea",530,"Paraguay","\ud83c\uddf5\ud83c\uddfe",159],["England","\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f",1310,"Bosnia & Herz.","\ud83c\udde7\ud83c\udde6",151],["France","\ud83c\uddeb\ud83c\uddf7",1476,"Algeria","\ud83c\udde9\ud83c\uddff",261],["Portugal","\ud83c\uddf5\ud83c\uddf9",957,"Ghana","\ud83c\uddec\ud83c\udded",234],["Norway","\ud83c\uddf3\ud83c\uddf4",601,"Colombia","\ud83c\udde8\ud83c\uddf4",309],["Sweden","\ud83c\uddf8\ud83c\uddea",433,"Uruguay","\ud83c\uddfa\ud83c\uddfe",411],["Ivory Coast","\ud83c\udde8\ud83c\uddee",537,"Morocco","\ud83c\uddf2\ud83c\udde6",494],["Argentina","\ud83c\udde6\ud83c\uddf7",816,"Croatia","\ud83c\udded\ud83c\uddf7",391],["USA","\ud83c\uddfa\ud83c\uddf8",383,"Austria","\ud83c\udde6\ud83c\uddf9",275],["Czechia","\ud83c\udde8\ud83c\uddff",192,"Egypt","\ud83c\uddea\ud83c\uddec",136]];
+const R16 = [["Canada","\ud83c\udde8\ud83c\udde6",206,"Turkey","\ud83c\uddf9\ud83c\uddf7",479,"Turkey",479],["Brazil","\ud83c\udde7\ud83c\uddf7",909,"Spain","\ud83c\uddea\ud83c\uddf8",1267,"Spain",1267],["Germany","\ud83c\udde9\ud83c\uddea",998,"Netherlands","\ud83c\uddf3\ud83c\uddf1",837,"Germany",998],["Belgium","\ud83c\udde7\ud83c\uddea",530,"England","\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f",1310,"England",1310],["France","\ud83c\uddeb\ud83c\uddf7",1476,"Norway","\ud83c\uddf3\ud83c\uddf4",601,"France",1476],["Portugal","\ud83c\uddf5\ud83c\uddf9",957,"Sweden","\ud83c\uddf8\ud83c\uddea",433,"Portugal",957],["Ivory Coast","\ud83c\udde8\ud83c\uddee",537,"Argentina","\ud83c\udde6\ud83c\uddf7",816,"Argentina",816],["USA","\ud83c\uddfa\ud83c\uddf8",383,"Czechia","\ud83c\udde8\ud83c\uddff",192,"USA",383]];
+const QF = [["Turkey","\ud83c\uddf9\ud83c\uddf7",479,"Spain","\ud83c\uddea\ud83c\uddf8",1267,"Spain",1267],["Germany","\ud83c\udde9\ud83c\uddea",998,"England","\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f",1310,"England",1310],["France","\ud83c\uddeb\ud83c\uddf7",1476,"Portugal","\ud83c\uddf5\ud83c\uddf9",957,"France",1476],["Argentina","\ud83c\udde6\ud83c\uddf7",816,"USA","\ud83c\uddfa\ud83c\uddf8",383,"Argentina",816]];
+const SF = [["Spain","\ud83c\uddea\ud83c\uddf8",1267,"England","\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f",1310,"England",1310],["France","\ud83c\uddeb\ud83c\uddf7",1476,"Argentina","\ud83c\udde6\ud83c\uddf7",816,"France",1476]];
+const FINAL = ["France","\ud83c\uddeb\ud83c\uddf7",1476,"England","\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f",1310];
+const THIRD = ["Spain","\ud83c\uddea\ud83c\uddf8",1267,"Argentina","\ud83c\udde6\ud83c\uddf7",816];
+const ELIM = {"Mexico":"Round of 32","South Africa":"Group Stage","South Korea":"Group Stage","Czechia":"Round of 16","Canada":"Round of 16","Switzerland":"Round of 32","Qatar":"Group Stage","Bosnia & Herz.":"Round of 32","Brazil":"Round of 16","Morocco":"Round of 32","Scotland":"Round of 32","Haiti":"Group Stage","USA":"Quarterfinal","Paraguay":"Round of 32","Australia":"Group Stage","Turkey":"Round of 16","Germany":"Quarterfinal","Ivory Coast":"Round of 16","Ecuador":"Round of 32","Cura\u00e7ao":"Group Stage","Netherlands":"Round of 16","Sweden":"Round of 16","Japan":"Round of 32","Tunisia":"Group Stage","Belgium":"Round of 16","Egypt":"Round of 32","Iran":"Group Stage","New Zealand":"Group Stage","Spain":"3rd Place","Uruguay":"Round of 32","Cabo Verde":"Group Stage","Saudi Arabia":"Group Stage","France":"Champion","Norway":"Round of 16","Senegal":"Round of 32","Iraq":"Group Stage","Argentina":"4th Place","Algeria":"Round of 32","Austria":"Round of 32","Jordan":"Group Stage","Portugal":"Quarterfinal","Colombia":"Round of 32","DR Congo":"Group Stage","Uzbekistan":"Group Stage","England":"Final","Croatia":"Round of 32","Ghana":"Round of 32","Panama":"Group Stage"};
+const BEST3 = new Set(["Senegal","Ecuador","Japan","Algeria","Ghana","Scotland","Paraguay","Bosnia & Herz."]);
+const MAX_VAL = 1476;
+
+function renderGroups() {
+  const grid = document.getElementById('groups-grid');
+  Object.entries(GROUPS).forEach(([letter, teams]) => {
+    const card = document.createElement('div');
+    card.className = 'gc';
+    let rows = '';
+    teams.forEach(([name, flag, val], i) => {
+      const is3rd = i === 2 && BEST3.has(name);
+      const qClass = i===0?'q1':i===1?'q2':is3rd?'q3':'';
+      const badge = i===0?'<span class="tbadge b1">1ST</span>':i===1?'<span class="tbadge b2">2ND</span>':is3rd?'<span class="tbadge b3">3RD*</span>':'';
+      const pct = Math.round(val/MAX_VAL*100);
+      rows += `<div class="tr ${qClass}"><span class="tf">${flag}</span><div style="flex:1;min-width:0"><div style="display:flex;align-items:center"><span class="tn">${name}</span>${badge}</div><div class="tbar-wrap"><div class="tbar" style="width:${pct}%"></div></div></div><span class="tv">&#8364;${val}M</span></div>`;
+    });
+    card.innerHTML = `<div class="gc-head"><span class="gc-letter">GROUP ${letter}</span><span class="gc-label">By market value</span></div><div class="gc-body">${rows}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+function matchEl(ta,fa,va,tb,fb,vb,isFinal=false) {
+  const aWins = va>=vb;
+  return `<div class="bm${isFinal?' is-final':''}"><div class="bmt${aWins?' win':''}"><span class="bmf">${fa}</span><span class="bmn">${ta}</span><span class="bmv">&#8364;${va}M</span></div><div class="bmt${!aWins?' win':''}"><span class="bmf">${fb}</span><span class="bmn">${tb}</span><span class="bmv">&#8364;${vb}M</span></div></div>`;
+}
+
+function renderBracket() {
+  const b = document.getElementById('bracket');
+  const rounds = [
+    {label:'Round of 32',data:R32.map(r=>[r[0],r[1],r[2],r[3],r[4],r[5]])},
+    {label:'Round of 16',data:R16.map(r=>[r[0],r[1],r[2],r[3],r[4],r[5]])},
+    {label:'Quarterfinals',data:QF.map(r=>[r[0],r[1],r[2],r[3],r[4],r[5]])},
+    {label:'Semifinals',data:SF.map(r=>[r[0],r[1],r[2],r[3],r[4],r[5]])},
+    {label:'Final',data:[[FINAL[0],FINAL[1],FINAL[2],FINAL[3],FINAL[4],FINAL[5]]]},
+  ];
+  rounds.forEach(({label,data}) => {
+    const col = document.createElement('div');
+    col.className = 'bround';
+    const isFinal = label==='Final';
+    col.innerHTML = `<div class="bround-hd">${label}</div><div class="bmatches">${data.map(r=>matchEl(r[0],r[1],r[2],r[3],r[4],r[5],isFinal)).join('')}</div>`;
+    b.appendChild(col);
+  });
+}
+
+function renderRankings() {
+  const all = [];
+  Object.entries(GROUPS).forEach(([,teams])=>teams.forEach(t=>all.push(t)));
+  all.sort((a,b)=>b[2]-a[2]);
+  const elimClass = {'Champion':'e-champ','Final':'e-final','3rd Place':'e-3rd','4th Place':'e-sf','Semifinal':'e-sf','Quarterfinal':'e-qf','Round of 16':'e-r16','Round of 32':'e-r32','Group Stage':'e-group'};
+  const elimLabel = {'Champion':'🏆 Champion','Final':'Final','3rd Place':'3rd Place','4th Place':'4th Place','Semifinal':'Semifinal','Quarterfinal':'Quarterfinal','Round of 16':'Round of 16','Round of 32':'Round of 32','Group Stage':'Group Stage'};
+  const body = document.getElementById('rankings-body');
+  all.forEach(([name,flag,val],i) => {
+    const rank = i+1;
+    const ex = ELIM[name]||'Group Stage';
+    const pct = Math.round(val/MAX_VAL*100);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td class="rnum${rank<=3?' top':''}">${rank}</td><td><span style="margin-right:.4rem">${flag}</span>${name}</td><td class="rval">&#8364;${val.toLocaleString()}M</td><td><div class="rbar-wrap"><div class="rbar" style="width:${pct}%"></div></div></td><td><span class="ebadge ${elimClass[ex]||'e-group'}">${elimLabel[ex]||ex}</span></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function showPage(id,btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+(function() {
+  const btn = document.getElementById('themeBtn');
+  const root = document.documentElement;
+  let dark = matchMedia('(prefers-color-scheme:dark)').matches;
+  root.setAttribute('data-theme',dark?'dark':'light');
+  const sunSvg = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>';
+  const moonSvg = '<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  btn.innerHTML = dark ? sunSvg : moonSvg;
+  btn.addEventListener('click',()=>{
+    dark=!dark;
+    root.setAttribute('data-theme',dark?'dark':'light');
+    btn.innerHTML=dark?sunSvg:moonSvg;
+  });
+})();
+
+renderGroups();
+renderBracket();
+renderRankings();
+</script>
+</body>
+</html>
